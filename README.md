@@ -53,11 +53,11 @@ code successfully.
 The flight program is structured as a state machine with the following states: adopted from BPS space 
 | State  | Description  | Waiting for event |
 |---|---| -----|
-| 0  | Pre-Flight Ground    |  20m Above Ground Level  |
-| 1  | Powered Flight      |  accelerationZ <=2m/s<sup>2</sup> for 0.1s |
-| 2  | Coasting      |  velecity less than zero to detect apogee|
-| 3  | Ballistic Descent    |  20m displacement below apogee to deploy parachute  |
-| 4  | Chute Descent| < 20m Above Ground|
+| 0  | Pre-Flight Ground    | altitude >= 20m AGL  |
+| 1  | Powered Flight      |  acceleration <= 2m/s<sup>2</sup> for 0.1s |
+| 2  | Coasting      |  velocity < 0 to detect apogee|
+| 3  | Apogee   |  20m below apogee to deploy parachute  |
+| 4  | Chute Descent| altitude <= 20m AGL|
 | 5  | Post-flight Ground    |  No more events  |
 
 
