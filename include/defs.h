@@ -16,51 +16,43 @@
 #define debugf(x, y)
 #endif
 
-#define SEA_LEVEL_PRESSURE 102400
+#define SEA_LEVEL_PRESSURE                  102400
 
 // Timing delays
-#define SETUP_DELAY 5000
-
-#define SHORT_DELAY 10
-
-#define BAUD_RATE 115200
-
-#define GPS_BAUD_RATE 9600
-
-#define SD_CS_PIN 5
+#define BAUD_RATE                           115200
+#define GPS_BAUD_RATE                       9600
 
 // Pin to start ejection charge
-#define EJECTION_PIN 4
+#define EJECTION_PIN                        4
 
-const uint8_t GPS_TX_PIN = 17;
-const uint8_t GPS_RX_PIN = 16;
+#define PRE_FLIGHT_GROUND_STATE             0
+#define POWERED_FLIGHT_STATE                1
+#define COASTING_STATE                      2
+#define BALLISTIC_DESCENT_STATE             3
+#define CHUTE_DESCENT_STATE                 4
+#define POST_FLIGHT_GROUND_STATE            5
 
-const BaseType_t pro_cpu = 0;
-const BaseType_t app_cpu = 1;
+#define GROUND_STATE_DISPLACEMENT           20
+#define BELOW_APOGEE_LEVEL_DISPLACEMENT     20
 
-const char *ssid = "S7 edge";
-const char *password = "almg76061";
+#define GPS_TX_PIN                          17
+#define GPS_RX_PIN                          16
+
+extern const BaseType_t pro_cpu;
+extern const BaseType_t app_cpu;
+
+#define ssid                                "S7 edge"
+#define password                            "almg76061"
 
 // MQTT Broker IP address
-const char *mqtt_server = "192.168.43.133";
+#define mqtt_server                         "192.168.43.133"
+#define MQQT_PORT                           1883
 
-const int MQQT_PORT = 1883;
-
-WiFiClient espClient;
-PubSubClient client(espClient);
+extern WiFiClient espClient;
+extern PubSubClient client;
 
 extern float BASE_ALTITUDE;
 extern float MAX_ALTITUDE;
-
-const int PRE_FLIGHT_GROUND_STATE = 0;
-const int POWERED_FLIGHT_STATE = 1;
-const int COASTING_STATE = 2;
-const int BALLISTIC_DESCENT_STATE = 3;
-const int CHUTE_DESCENT_STATE = 4;
-const int POST_FLIGHT_GROUND_STATE = 5;
-
-const int GROUND_STATE_DISPLACEMENT = 20;
-const int BELOW_APOGEE_LEVEL_DISPLACEMENT = 20;
 
 // This struct is used to save all our datapoints.
 // It includes rocket altitude, accelerations in the x, y and z directions
