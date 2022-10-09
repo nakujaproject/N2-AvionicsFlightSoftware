@@ -1,10 +1,11 @@
 #include <Arduino.h>
-#include "../include/checkState.h"
-#include "../include/logdata.h"
-#include "../include/readsensors.h"
-#include "../include/transmitwifi.h"
-#include "../include/defs.h"
-#include "../include/kalmanfilter.h"
+#include "checkState.h"
+#include "logdata.h"
+#include "readsensors.h"
+#include "transmitwifi.h"
+#include "defs.h"
+#include "kalmanfilter.h"
+#include "functions.h"
 
 TimerHandle_t ejectionTimerHandle = NULL;
 
