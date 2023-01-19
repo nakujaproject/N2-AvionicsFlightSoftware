@@ -2,15 +2,17 @@
 #define TRANSMITWIFI_H
 
 #include "defs.h"
+#include "functions.h"
 
 void mqttCallback(char *topic, byte *message, unsigned int length);
 
 void setup_wifi();
+void create_Accesspoint();
 
 void reconnect();
 
-void sendTelemetryWiFi(SendValues sv[5]);
+void sendTelemetryWiFi(Data sv);
 
-void handleWiFi(SendValues sv[5]);
+void handleWiFi(Data sv);
 
 #endif

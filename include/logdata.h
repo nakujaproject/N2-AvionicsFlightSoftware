@@ -5,9 +5,9 @@
 
 void initSDCard();
 
-char *printSDMessage(LogData ld);
+char *printSDMessage(Data ld);
 
-void appendToFile(LogData ld[5]);
+void appendToFile(Data ld[5]);
 
 
 #endif
