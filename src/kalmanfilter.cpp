@@ -1,9 +1,12 @@
+
 #include <BasicLinearAlgebra.h>
 #include "defs.h"
 #include "kalmanfilter.h"
 
+using namespace BLA;
 
 float q = 0.0001;
+
 float T = 0.1;
 
 // The system dynamics
@@ -41,7 +44,7 @@ BLA::Matrix<3, 1> x_hat = {1500.0,
 BLA::Matrix<2, 1> Y = {0.0,
                        0.0};
 
-// kalmanUpdate This filters our altitude and acceleration values
+// kalmanUpdate This filteres our altitude and acceleration values
 struct FilteredValues kalmanUpdate(float altitude, float acceleration)
 {
     struct FilteredValues return_val;

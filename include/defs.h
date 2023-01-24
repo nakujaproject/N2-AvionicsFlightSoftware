@@ -5,6 +5,9 @@
 #include <PubSubClient.h>
 #include <Wire.h>
 
+// this will be used in debugging the code by printing out the output
+//the final code to be uploaded set DEBUG =0 to disable all debug statements
+
 #define DEBUG 1
 #if DEBUG == 1
 #define debug(x) Serial.print(x)
@@ -16,37 +19,53 @@
 #define debugf(x, y)
 #endif
 
-#define SEA_LEVEL_PRESSURE                  102400
+//the sea level pressure of the area we are at
+#define SEA_LEVEL_PRESSURE 102400
 
 // Timing delays
-#define BAUD_RATE                           115200
-#define GPS_BAUD_RATE                       9600
+#define SETUP_DELAY 5000
+#define SHORT_DELAY 10
+
+
+#define BAUD_RATE 115200
+#define GPS_BAUD_RATE 9600
+
+
+#define SD_CS_PIN 5
 
 // Pin to start ejection charge
-#define EJECTION_PIN                        4
+#define EJECTION_PIN 4
 
-#define PRE_FLIGHT_GROUND_STATE             0
-#define POWERED_FLIGHT_STATE                1
-#define COASTING_STATE                      2
-#define BALLISTIC_DESCENT_STATE             3
-#define CHUTE_DESCENT_STATE                 4
-#define POST_FLIGHT_GROUND_STATE            5
+//buzzer signal pin
+#define buzzer_pin 32
 
-#define GROUND_STATE_DISPLACEMENT           20
-#define BELOW_APOGEE_LEVEL_DISPLACEMENT     20
+//initializing the state machine states
+#define PRE_FLIGHT_GROUND_STATE 0
+#define POWERED_FLIGHT_STATE 1
+#define BALLISTIC_DESCENT_STATE 2
+#define CHUTE_DESCENT_STATE 3
+#define POST_FLIGHT_GROUND_STATE 4
 
-#define GPS_TX_PIN                          17
-#define GPS_RX_PIN                          16
+//define the thresholds of the various displacements that need to be achieved in the state machine
+#define GROUND_STATE_DISPLACEMENT 10
+#define BELOW_APOGEE_LEVEL_DISPLACEMENT 10
 
+#define GPS_TX_PIN 17
+#define GPS_RX_PIN 16
+
+//defining the two CPU cores to be used
 extern const BaseType_t pro_cpu;
 extern const BaseType_t app_cpu;
 
-#define ssid                                "S7 edge"
-#define password                            "almg76061"
+// network credentials
+#define ssid "unknown-network"
+#define password "4321,dcba"
 
 // MQTT Broker IP address
-#define mqtt_server                         "192.168.43.133"
-#define MQQT_PORT                           1883
+#define mqtt_server "192.168.100.54"
+//size of the data to be transmitted. can be increased or decreased based on the quantity of data you will transmit
+#define MQTT_BUFFER_SIZE 300
+#define MQQT_PORT 1883
 
 extern WiFiClient espClient;
 extern PubSubClient client;
@@ -58,8 +77,9 @@ extern float MAX_ALTITUDE;
 // It includes rocket altitude, accelerations in the x, y and z directions
 // Gryroscope values in the x, y and z direcion
 // filtered altitude, velocity and acceleration
-// GPS longitude, laltitude and altitude and state
-struct LogData
+// GPS longitude, laltitude, altitude and 
+//state and temperature
+struct Data
 {
     uint64_t timeStamp;
     float altitude;
@@ -76,12 +96,14 @@ struct LogData
     float latitude;
     float longitude;
     float gpsAltitude;
+    float temperature;
 };
 // SensorReadings contains the measurement we are getting
 // from the sensors bmp and mpu
 struct SensorReadings
 {
     float altitude;
+    float temperature;
     float ax;
     float ay;
     float az;
@@ -106,15 +128,6 @@ struct FilteredValues
     float displacement;
     float velocity;
     float acceleration;
-};
-// SendValues contains the data points we will be sending over lora
-struct SendValues
-{
-    uint64_t timeStamp;
-    float altitude;
-    uint16_t state;
-    float latitude;
-    float longitude;
 };
 
 #endif

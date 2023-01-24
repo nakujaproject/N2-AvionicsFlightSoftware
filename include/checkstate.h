@@ -1,9 +1,9 @@
 #ifndef CHECKSTATE_H
 #define CHECKSTATE_H
 
-int checkInPoweredFlight(float altitude);
+//we initialize functions that will be included in checkstate.cpp
 
-int checkForBurnOut(float acceleration);
+int checkInPoweredFlight(float altitude);
 
 int checkForApogee(float velocity, float currentAltitude, float previousAltitude);
 
