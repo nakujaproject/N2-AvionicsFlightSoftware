@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "checkstate.h"
-#include "logdata.h"
 #include "readsensors.h"
 #include "transmitwifi.h"
 #include "defs.h"
