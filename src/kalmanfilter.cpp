@@ -8,7 +8,7 @@ using namespace BLA;
 float q = 0.0001;
 
 float T = 0.1;
-float t = 0.074;
+float t = 0.074; // sampling period
 
 // The system dynamics
 BLA::Matrix<3, 3> A = {1.0, t, 0.5 * t *t,
