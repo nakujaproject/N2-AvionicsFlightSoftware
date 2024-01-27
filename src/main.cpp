@@ -30,7 +30,7 @@ int access_point = 0;
 
 float BASE_ALTITUDE = 0;
 
-float previousAltitude;
+float temporalMaxAltitude = 0;
 
 volatile int state = 0;
 
@@ -75,9 +75,13 @@ struct Data readData()
 
   // using mutex to modify state
   portENTER_CRITICAL(&mutex);
-  state = checkState(filtered_values.displacement, previousAltitude, filtered_values.velocity, filtered_values.acceleration, state);
+  state = checkState(filtered_values.displacement, temporalMaxAltitude, filtered_values.velocity, filtered_values.acceleration, state);
   portEXIT_CRITICAL(&mutex);
-  previousAltitude = filtered_values.displacement;
+  if (temporalMaxAltitude < filtered_values.displacement)
+  {
+    temporalMaxAltitude = filtered_values.displacement;
+  }
+
   ld = formart_data(readings, filtered_values);
   ld.state = state;
   ld.timeStamp = millis();
