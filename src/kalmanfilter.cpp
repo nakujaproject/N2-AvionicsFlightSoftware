@@ -9,6 +9,7 @@ float q = 0.0001;
 
 float T = 0.1;
 float t = 0.074; // sampling period
+float baseAltitude = 1272; // to be set before launch based on the base altitude of the launch site
 
 // The system dynamics
 BLA::Matrix<3, 3> A = {1.0, t, 0.5 * t *t,
@@ -38,7 +39,7 @@ BLA::Matrix<3, 3> I = {1, 0, 0,
                        0, 1, 0,
                        0, 0, 1};
 
-BLA::Matrix<3, 1> x_hat = {1500,
+BLA::Matrix<3, 1> x_hat = {baseAltitude,
                            0.0,
                            0.0};
 
@@ -72,5 +73,6 @@ struct FilteredValues kalmanUpdate(float altitude, float acceleration)
     return_val.velocity = x_hat(1);
     return_val.acceleration = x_hat(2);
 
+    debugf("baseAltitude: %f\n", baseAltitude);
     return return_val;
 }
