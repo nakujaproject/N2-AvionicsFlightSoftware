@@ -1,9 +1,12 @@
 
 #include <WiFi.h>
 #include "transmitwifi.h"
+#include "SPIFFS.h"
 
+File file;
 void mqttCallback(char *topic, byte *message, unsigned int length)
 {
+  delay(2000);
   debug("Message arrived on topic: ");
   debug(topic);
   debug(". Message: ");
@@ -22,13 +25,13 @@ void mqttCallback(char *topic, byte *message, unsigned int length)
   // Changes the output state according to the message
   if (String(topic) == "controls/ejection")
   {
-    debug("Changing output to ");
-    if (messageTemp == "on")
+    if (messageTemp == "FIRE")
     {
       debugln("on");
       digitalWrite(EJECTION_PIN, HIGH);
+      delay(2000);
     }
-    else if (messageTemp == "off")
+    else if (messageTemp == "ABORT")
     {
       debugln("off");
       digitalWrite(EJECTION_PIN, LOW);
@@ -82,6 +85,7 @@ void setup_wifi()
   client.setBufferSize(MQTT_BUFFER_SIZE);
   client.setServer(mqtt_server, MQQT_PORT);
   client.setCallback(mqttCallback);
+  client.subscribe("controls/ejection");
 }
 
 void reconnect()
@@ -130,7 +134,17 @@ void sendTelemetryWiFi(Data sv)
             sv.longitude,//12
             sv.state//13
         );
+    file = SPIFFS.open("/log.csv", FILE_APPEND);
     client.publish("n3/telemetry", mqttMessage);
+    if (file.print(mqttMessage))
+    {
+      debugln("[+] Message appended");
+    }
+    else
+    {
+      debugln("[-] Append failed");
+    }
+    file.close();
     debugln(mqttMessage);
 }
 

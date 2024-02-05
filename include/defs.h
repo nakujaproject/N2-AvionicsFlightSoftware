@@ -34,7 +34,7 @@
 #define SD_CS_PIN 5
 
 // Pin to start ejection charge
-#define EJECTION_PIN 4
+#define EJECTION_PIN 27
 
 //buzzer signal pin
 #define buzzer_pin 32
@@ -47,8 +47,8 @@
 #define POST_FLIGHT_GROUND_STATE 4
 
 //define the thresholds of the various displacements that need to be achieved in the state machine
-#define GROUND_STATE_DISPLACEMENT 2.5
-#define BELOW_APOGEE_LEVEL_DISPLACEMENT 2.5
+#define GROUND_STATE_DISPLACEMENT 35
+#define BELOW_APOGEE_LEVEL_DISPLACEMENT 10
 
 #define GPS_TX_PIN 17
 #define GPS_RX_PIN 16
@@ -62,7 +62,7 @@ extern const BaseType_t app_cpu;
 #define password "luwa2131"
 
 // MQTT Broker IP address
-#define mqtt_server "192.168.78.19"
+#define mqtt_server "192.168.1.106"
 //size of the data to be transmitted. can be increased or decreased based on the quantity of data you will transmit
 #define MQTT_BUFFER_SIZE 300
 #define MQQT_PORT 1882
