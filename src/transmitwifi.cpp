@@ -59,6 +59,7 @@ debugln(password);
 void setup_wifi()
 {
   // Connect to a WiFi network
+  digitalWrite(LED_BUILTIN, HIGH);
   debugln();
   debug("Connecting to ");
   debugln(ssid);
@@ -76,6 +77,7 @@ void setup_wifi()
   debugln("WiFi connected");
   debugln("IP address: ");
   debugln(WiFi.localIP());
+  digitalWrite(LED_BUILTIN, LOW);
 
   client.setBufferSize(MQTT_BUFFER_SIZE);
   client.setServer(mqtt_server, MQQT_PORT);
@@ -111,8 +113,24 @@ void sendTelemetryWiFi(Data sv)
 
     // publish whole message i json
     char mqttMessage[300];
-    sprintf(mqttMessage, "{\"timestamp\":%lld,\"altitude\":%.3f,\"temperature\":%.3f,\"ax\":%.3f,\"ay\":%.3f,\"az\":%.3f,\"gx\":%.3f,\"gy\":%.3f,\"gz\":%.3f,\"filtered_s\":%.3f,\"filtered_v\":%.3f,\"filtered_a\":%.3f,\"state\":%d,\"longitude\":%.8f,\"latitude\":%.8f}", sv.timeStamp, sv.altitude,sv.temperature,sv.ax,sv.ay,sv.az,sv.gx,sv.gy,sv.gz,sv.filtered_s,sv.filtered_v,sv.filtered_a, sv.state, sv.longitude, sv.latitude);
-    client.publish("esp32/message", mqttMessage);
+    sprintf(mqttMessage,
+            "%lld,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.16f,%.16f,%i\n",
+            sv.timeStamp,//0
+            sv.ax,//1
+            sv.ay,//2
+            sv.az,//3
+            sv.gx,//4
+            sv.gy,//5
+            sv.gz,//6
+            sv.altitude,//7
+            sv.filtered_s,//8
+            sv.filtered_v,//9
+            sv.filtered_a,//10
+            sv.latitude,//11
+            sv.longitude,//12
+            sv.state//13
+        );
+    client.publish("n3/telemetry", mqttMessage);
     debugln(mqttMessage);
 }
 

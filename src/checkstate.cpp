@@ -27,7 +27,7 @@ int checkInPoweredFlight(float altitude)
 //this would determine that the rocket has began descent
 int checkForApogee(float velocity, float currentAltitude, float previousAltitude)
 {
-    if ((previousAltitude - currentAltitude) > 5)
+    if ((previousAltitude - currentAltitude) > 2)
     {
 
         MAX_ALTITUDE = currentAltitude;

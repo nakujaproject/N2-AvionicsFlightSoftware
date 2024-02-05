@@ -54,6 +54,7 @@ void ejection()
 {
   if (isChuteDeployed == 0)
   {
+    digitalWrite(buzzer_pin, HIGH); 
     digitalWrite(EJECTION_PIN, HIGH);
     // TODO: is 3 seconds enough?
     ejectionTimerHandle = xTimerCreate("EjectionTimer", 3000 / portTICK_PERIOD_MS, pdFALSE, (void *)0, ejectionTimerCallback);
@@ -71,7 +72,7 @@ struct Data readData()
 
   // TODO: very important to know the orientation of the altimeter
 
-  filtered_values = kalmanUpdate(readings.altitude, readings.ax - 9.8);
+  filtered_values = kalmanUpdate(readings.altitude, readings.ay - 9.8);
 
   // using mutex to modify state
   portENTER_CRITICAL(&mutex);
