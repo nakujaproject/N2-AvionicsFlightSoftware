@@ -71,7 +71,7 @@ struct Data readData()
 
   // TODO: very important to know the orientation of the altimeter
 
-  filtered_values = kalmanUpdate(readings.altitude, readings.ax - 9.8);
+  filtered_values = kalmanUpdate(readings.altitude, readings.ay - 9.8);
 
   // using mutex to modify state
   portENTER_CRITICAL(&mutex);
