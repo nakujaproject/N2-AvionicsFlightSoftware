@@ -253,6 +253,13 @@ void setup()
   // set up buzzer pin
   pinMode(buzzer_pin, OUTPUT);
 
+  if (access_point == 1)
+  {
+    create_Accesspoint();
+  }
+  else
+  {
+
     setup_wifi();
   }
 
