@@ -15,15 +15,10 @@ TaskHandle_t WiFiTelemetryTaskHandle;
 
 TaskHandle_t GetDataTaskHandle;
 
-TaskHandle_t SPIFFSWriteTaskHandle;
-
 TaskHandle_t GPSTaskHandle;
 
 // if 1 chute has been deployed
 uint8_t isChuteDeployed = 0;
-
-/* Onboard logging */
-File file;
 
 // determines whether we create an access point or connect to one
 int access_point = 0;
@@ -34,12 +29,10 @@ float temporalMaxAltitude = 0;
 
 volatile int state = 0;
 
-static uint16_t wifi_queue_length = 100;
-static uint16_t spiff_queue_length = 500;
+static uint16_t wifi_queue_length = 300;
 static uint16_t gps_queue_length = 100;
 
 static QueueHandle_t wifi_telemetry_queue;
-static QueueHandle_t spiff_queue;
 static QueueHandle_t gps_queue;
 
 // callback for done ejection
@@ -95,7 +88,6 @@ void GetDataTask(void *parameter)
   struct Data ld = {0};
 
   static int droppedWiFiPackets = 0;
-  static int droppedSPIFFPackets = 0;
 
   for (;;)
   {
@@ -106,13 +98,8 @@ void GetDataTask(void *parameter)
     {
       droppedWiFiPackets++;
     }
-    if (xQueueSend(spiff_queue, (void *)&ld, 0) != pdTRUE)
-    {
-      droppedSPIFFPackets++;
-    }
 
     debugf("Dropped WiFi Packets : %d\n", droppedWiFiPackets);
-    debugf("Dropped spiff Packets : %d\n", droppedSPIFFPackets);
 
     // yield to WiFi Telemetry task
     vTaskDelay(74 / portTICK_PERIOD_MS);
@@ -174,70 +161,16 @@ void readGPSTask(void *parameter)
   }
 }
 
-void SPIFFSWriteTask(void *parameter)
+void deleteFiles()
 {
-
-  struct Data ld = {0};
-  struct Data ldRecords[5];
-  struct GPSReadings gps = {0};
-  float latitude = 0;
-  float longitude = 0;
-  char telemetry_data[180];
-  int id = 0;
-
-  file = SPIFFS.open("/log.csv", FILE_APPEND);
-  if (!file)
-    debugln("[-] Failed to open file for appending");
-  else
-    debugln("[+] File opened for appending");
-
-  for (;;)
+  debugln("Deleting log.csv");
+  if(SPIFFS.remove("/log.csv"))
   {
-
-    for (int i = 0; i < 5; i++)
-    {
-      xQueueReceive(spiff_queue, (void *)&ld, 10);
-
-      ldRecords[i] = ld;
-      ldRecords[i].latitude = latitude;
-      ldRecords[i].longitude = longitude;
-
-      if (xQueueReceive(gps_queue, (void *)&gps, 10) == pdTRUE)
-      {
-        latitude = gps.latitude;
-        longitude = gps.longitude;
-      }
-    }
-
-    sprintf(telemetry_data,
-            "%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%.2f,%.2f,%.2f,%.16f,%.16f\n",
-            id,            // 0
-            ld.ax,         // 1
-            ld.ay,         // 2
-            ld.az,         // 3
-            ld.gx,         // 4
-            ld.gy,         // 5
-            ld.gz,         // 6
-            ld.state,      // 7
-            ld.filtered_s, // 8
-            ld.filtered_v, // 9
-            ld.filtered_a, // 10
-            gps.latitude,  // 11
-            gps.longitude  // 12
-    );
-
-    if (file.print(telemetry_data))
-    {
-      debugln("[+] Message appended");
-    }
-    else
-    {
-      debugln("[-] Append failed");
-    }
-    file.close();
-
-    // yield to GPS Task
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    debugln("[+] log.csv deleted");
+  }
+  else
+  {
+    debugln("[-] log.csv not deleted");
   }
 }
 
@@ -269,20 +202,21 @@ void setup()
   if (!SPIFFS.begin(true))
     debugln("[-] An error occurred while mounting SPIFFS");
   else
+  {
     debugln("[+] SPIFFS mounted successfully");
+    deleteFiles();
+  }
 
   // get the base_altitude
   BASE_ALTITUDE = get_base_altitude();
 
   wifi_telemetry_queue = xQueueCreate(wifi_queue_length, sizeof(Data));
-  spiff_queue = xQueueCreate(spiff_queue_length, sizeof(Data));
   gps_queue = xQueueCreate(gps_queue_length, sizeof(GPSReadings));
 
   // initialize core tasks
   xTaskCreatePinnedToCore(GetDataTask, "GetDataTask", 3000, NULL, 1, &GetDataTaskHandle, 0);
   xTaskCreatePinnedToCore(WiFiTelemetryTask, "WiFiTelemetryTask", 4000, NULL, 1, &WiFiTelemetryTaskHandle, 0);
   xTaskCreatePinnedToCore(readGPSTask, "ReadGPSTask", 3000, NULL, 1, &GPSTaskHandle, 1);
-  xTaskCreatePinnedToCore(SPIFFSWriteTask, "SPIFFSWriteTask", 4000, NULL, 1, &SPIFFSWriteTaskHandle, 1);
 
   vTaskDelete(NULL);
 }
