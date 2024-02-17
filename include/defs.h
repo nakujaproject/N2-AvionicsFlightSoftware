@@ -55,11 +55,12 @@ extern const BaseType_t pro_cpu;
 extern const BaseType_t app_cpu;
 
 // network credentials
-#define ssid "Enter your wifi ssid here"
-#define password "Enter your wifi password here"
+// network credentials
+#define ssid ".........."
+#define secret ".........."
 
 // MQTT Broker IP address
-#define mqtt_server "Enter your MQTT broker IP address here"
+#define mqtt_server ".........."
 // size of the data to be transmitted. can be increased or decreased based on the quantity of data you will transmit
 #define MQTT_BUFFER_SIZE 300
 #define MQQT_PORT 1883

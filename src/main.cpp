@@ -95,7 +95,7 @@ void GetDataTask(void *parameter)
   struct Data ld = {0};
 
   static int droppedWiFiPackets = 0;
-  static int droppedSDPackets = 0;
+  static int droppedSPIFFPackets = 0;
 
   for (;;)
   {
@@ -108,11 +108,11 @@ void GetDataTask(void *parameter)
     }
     if (xQueueSend(spiff_queue, (void *)&ld, 0) != pdTRUE)
     {
-      droppedSDPackets++;
+      droppedSPIFFPackets++;
     }
 
     debugf("Dropped WiFi Packets : %d\n", droppedWiFiPackets);
-    debugf("Dropped SD Packets : %d\n", droppedSDPackets);
+    debugf("Dropped spiff Packets : %d\n", droppedSPIFFPackets);
 
     // yield to WiFi Telemetry task
     vTaskDelay(74 / portTICK_PERIOD_MS);

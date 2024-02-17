@@ -73,6 +73,5 @@ struct FilteredValues kalmanUpdate(float altitude, float acceleration)
     return_val.velocity = x_hat(1);
     return_val.acceleration = x_hat(2);
 
-    debugf("baseAltitude: %f\n", baseAltitude);
     return return_val;
 }

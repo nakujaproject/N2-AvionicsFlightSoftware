@@ -1,6 +1,11 @@
 
 #include <WiFi.h>
 #include "transmitwifi.h"
+#include <AsyncElegantOTA.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+
+AsyncWebServer server(80);
 
 void mqttCallback(char *topic, byte *message, unsigned int length)
 {
@@ -35,16 +40,16 @@ void mqttCallback(char *topic, byte *message, unsigned int length)
     }
   }
 }
-//if you plan on using the NodeMCU as the access point for wifi access
+// if you plan on using the NodeMCU as the access point for wifi access
 void create_Accesspoint()
 {
-debugln();
-debug("creating access point ");
-debugln("ssid: ");
-debugln(ssid);
-debugln("password: ");
-debugln(password);
- WiFi.softAP(ssid, password);
+  debugln();
+  debug("creating access point ");
+  debugln("ssid: ");
+  debugln(ssid);
+  debugln("secret: ");
+  debugln(secret);
+  WiFi.softAP(ssid, secret);
   IPAddress IP = WiFi.softAPIP();
   debugln("Access point successully created ");
   debugln("IP address: ");
@@ -52,10 +57,9 @@ debugln(password);
   client.setBufferSize(MQTT_BUFFER_SIZE);
   client.setServer(mqtt_server, MQQT_PORT);
   client.setCallback(mqttCallback);
-
 }
 
-//If you plan on connecting to an external access point as with the case of the outdoor unit
+// If you plan on connecting to an external access point as with the case of the outdoor unit
 void setup_wifi()
 {
   // Connect to a WiFi network
@@ -63,13 +67,13 @@ void setup_wifi()
   debug("Connecting to ");
   debugln(ssid);
 
-  WiFi.begin(ssid, password);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, secret);
 
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
     debug(".");
-    
   }
 
   debugln("");
@@ -80,6 +84,15 @@ void setup_wifi()
   client.setBufferSize(MQTT_BUFFER_SIZE);
   client.setServer(mqtt_server, MQQT_PORT);
   client.setCallback(mqttCallback);
+
+  // Route for root / web page
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(200, "text/plain", "Welcome to the Rocket Telemetry OTA server"); });
+
+  // Start server
+  AsyncElegantOTA.begin(&server); // Start ElegantOTA
+  server.begin();
+  debugln("HTTP server started");
 }
 
 void reconnect()
@@ -109,11 +122,11 @@ void reconnect()
 void sendTelemetryWiFi(Data sv)
 {
 
-    // publish whole message i json
-    char mqttMessage[300];
-    sprintf(mqttMessage, "{\"timestamp\":%lld,\"altitude\":%.3f,\"temperature\":%.3f,\"ax\":%.3f,\"ay\":%.3f,\"az\":%.3f,\"gx\":%.3f,\"gy\":%.3f,\"gz\":%.3f,\"filtered_s\":%.3f,\"filtered_v\":%.3f,\"filtered_a\":%.3f,\"state\":%d,\"longitude\":%.8f,\"latitude\":%.8f}", sv.timeStamp, sv.altitude,sv.temperature,sv.ax,sv.ay,sv.az,sv.gx,sv.gy,sv.gz,sv.filtered_s,sv.filtered_v,sv.filtered_a, sv.state, sv.longitude, sv.latitude);
-    client.publish("esp32/message", mqttMessage);
-    debugln(mqttMessage);
+  // publish whole message i json
+  char mqttMessage[300];
+  sprintf(mqttMessage, "{\"timestamp\":%lld,\"altitude\":%.3f,\"temperature\":%.3f,\"ax\":%.3f,\"ay\":%.3f,\"az\":%.3f,\"gx\":%.3f,\"gy\":%.3f,\"gz\":%.3f,\"filtered_s\":%.3f,\"filtered_v\":%.3f,\"filtered_a\":%.3f,\"state\":%d,\"longitude\":%.8f,\"latitude\":%.8f}", sv.timeStamp, sv.altitude, sv.temperature, sv.ax, sv.ay, sv.az, sv.gx, sv.gy, sv.gz, sv.filtered_s, sv.filtered_v, sv.filtered_a, sv.state, sv.longitude, sv.latitude);
+  client.publish("esp32/message", mqttMessage);
+  debugln(mqttMessage);
 }
 
 void handleWiFi(Data sv)
