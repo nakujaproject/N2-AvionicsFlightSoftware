@@ -56,11 +56,11 @@ extern const BaseType_t app_cpu;
 
 // network credentials
 // network credentials
-#define ssid "PEPS"
-#define secret "4321,dcba"
+#define ssid "........"
+#define secret "........"
 
 // MQTT Broker IP address
-#define mqtt_server "192.168.100.35"
+#define mqtt_server "........"
 // size of the data to be transmitted. can be increased or decreased based on the quantity of data you will transmit
 #define MQTT_BUFFER_SIZE 300
 #define MQQT_PORT 1883
