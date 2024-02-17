@@ -5,6 +5,8 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+#include "SPIFFS.h"
+
 AsyncWebServer server(80);
 
 void mqttCallback(char *topic, byte *message, unsigned int length)
@@ -37,6 +39,16 @@ void mqttCallback(char *topic, byte *message, unsigned int length)
     {
       debugln("off");
       digitalWrite(EJECTION_PIN, LOW);
+    }
+  }
+
+  if (String(topic) == "controls/reset")
+  {
+    debug("Changing output to ");
+    if (messageTemp == "on")
+    {
+      debugln("on");
+      ESP.restart();
     }
   }
 }
@@ -107,6 +119,7 @@ void reconnect()
       debugln("connected to Mosquitto server");
       // Subscribe
       client.subscribe("controls/ejection");
+      client.subscribe("controls/reset");
     }
     else
     {
@@ -121,7 +134,6 @@ void reconnect()
 
 void sendTelemetryWiFi(Data sv)
 {
-
   // publish whole message i json
   char mqttMessage[300];
   sprintf(mqttMessage, "{\"timestamp\":%lld,\"altitude\":%.3f,\"temperature\":%.3f,\"ax\":%.3f,\"ay\":%.3f,\"az\":%.3f,\"gx\":%.3f,\"gy\":%.3f,\"gz\":%.3f,\"filtered_s\":%.3f,\"filtered_v\":%.3f,\"filtered_a\":%.3f,\"state\":%d,\"longitude\":%.8f,\"latitude\":%.8f}", sv.timeStamp, sv.altitude, sv.temperature, sv.ax, sv.ay, sv.az, sv.gx, sv.gy, sv.gz, sv.filtered_s, sv.filtered_v, sv.filtered_a, sv.state, sv.longitude, sv.latitude);

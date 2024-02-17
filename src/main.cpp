@@ -34,7 +34,7 @@ float temporalMaxAltitude = 0;
 
 volatile int state = 0;
 
-static uint16_t wifi_queue_length = 100;
+static uint16_t wifi_queue_length = 300;
 static uint16_t spiff_queue_length = 500;
 static uint16_t gps_queue_length = 100;
 
@@ -119,6 +119,68 @@ void GetDataTask(void *parameter)
   }
 }
 
+void writeFile(const char *message)
+{
+  file = SPIFFS.open("/log.csv", FILE_APPEND);
+  if (file.print(message))
+  {
+    debugln("[+] Message appended");
+  }
+  else
+  {
+    debugln("[-] Append failed");
+  }
+  file.close();
+}
+
+void SPIFFSWriteTask(void *parameter)
+{
+  struct Data ld = {0};
+  struct Data ldRecords[5];
+  struct GPSReadings gps = {0};
+  float latitude = 0;
+  float longitude = 0;
+  char telemetry_data[300];
+
+  for (;;)
+  {
+
+    for (int i = 0; i < 5; i++)
+    {
+      xQueueReceive(spiff_queue, (void *)&ld, 10);
+
+      ldRecords[i] = ld;
+      ldRecords[i].latitude = latitude;
+      ldRecords[i].longitude = longitude;
+
+      if (xQueueReceive(gps_queue, (void *)&gps, 10) == pdTRUE)
+      {
+        latitude = gps.latitude;
+        longitude = gps.longitude;
+      }
+    }
+
+    sprintf(telemetry_data,
+            "%lld,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%.2f,%.2f,%.2f,%.2f,%.16f,%.16f\n",
+            ld.timeStamp,   // 0
+            ld.ax,          // 1
+            ld.ay,          // 2
+            ld.az,          // 3
+            ld.gx,          // 4
+            ld.gy,          // 5
+            ld.gz,          // 6
+            ld.state,       // 7
+            ld.filtered_s,  // 8
+            ld.filtered_v,  // 9
+            ld.filtered_a,  // 10
+            ld.temperature, // 11
+            gps.latitude,   // 12
+            gps.longitude   // 13
+    );
+    writeFile(telemetry_data);
+  }
+}
+
 void WiFiTelemetryTask(void *parameter)
 {
 
@@ -174,70 +236,16 @@ void readGPSTask(void *parameter)
   }
 }
 
-void SPIFFSWriteTask(void *parameter)
+void deleteFiles()
 {
-
-  struct Data ld = {0};
-  struct Data ldRecords[5];
-  struct GPSReadings gps = {0};
-  float latitude = 0;
-  float longitude = 0;
-  char telemetry_data[180];
-  int id = 0;
-
-  file = SPIFFS.open("/log.csv", FILE_APPEND);
-  if (!file)
-    debugln("[-] Failed to open file for appending");
-  else
-    debugln("[+] File opened for appending");
-
-  for (;;)
+  debugln("Deleting log.csv");
+  if (SPIFFS.remove("/log.csv"))
   {
-
-    for (int i = 0; i < 5; i++)
-    {
-      xQueueReceive(spiff_queue, (void *)&ld, 10);
-
-      ldRecords[i] = ld;
-      ldRecords[i].latitude = latitude;
-      ldRecords[i].longitude = longitude;
-
-      if (xQueueReceive(gps_queue, (void *)&gps, 10) == pdTRUE)
-      {
-        latitude = gps.latitude;
-        longitude = gps.longitude;
-      }
-    }
-
-    sprintf(telemetry_data,
-            "%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%.2f,%.2f,%.2f,%.16f,%.16f\n",
-            id,            // 0
-            ld.ax,         // 1
-            ld.ay,         // 2
-            ld.az,         // 3
-            ld.gx,         // 4
-            ld.gy,         // 5
-            ld.gz,         // 6
-            ld.state,      // 7
-            ld.filtered_s, // 8
-            ld.filtered_v, // 9
-            ld.filtered_a, // 10
-            gps.latitude,  // 11
-            gps.longitude  // 12
-    );
-
-    if (file.print(telemetry_data))
-    {
-      debugln("[+] Message appended");
-    }
-    else
-    {
-      debugln("[-] Append failed");
-    }
-    file.close();
-
-    // yield to GPS Task
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    debugln("[+] log.csv deleted");
+  }
+  else
+  {
+    debugln("[-] log.csv not deleted");
   }
 }
 
@@ -269,14 +277,17 @@ void setup()
   if (!SPIFFS.begin(true))
     debugln("[-] An error occurred while mounting SPIFFS");
   else
+  {
     debugln("[+] SPIFFS mounted successfully");
+    deleteFiles();
+  }
 
   // get the base_altitude
   BASE_ALTITUDE = get_base_altitude();
 
   wifi_telemetry_queue = xQueueCreate(wifi_queue_length, sizeof(Data));
-  spiff_queue = xQueueCreate(spiff_queue_length, sizeof(Data));
   gps_queue = xQueueCreate(gps_queue_length, sizeof(GPSReadings));
+  spiff_queue = xQueueCreate(spiff_queue_length, sizeof(Data));
 
   // initialize core tasks
   xTaskCreatePinnedToCore(GetDataTask, "GetDataTask", 3000, NULL, 1, &GetDataTaskHandle, 0);
