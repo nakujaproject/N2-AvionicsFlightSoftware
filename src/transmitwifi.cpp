@@ -13,11 +13,14 @@ void mqttCallback(char *topic, byte *message, unsigned int length)
   debug(topic);
   debug(". Message: ");
   String messageTemp;
+  int8_t isInStandby = -1;
 
   for (int i = 0; i < length; i++)
   {
     debug((char)message[i]);
     messageTemp += (char)message[i];
+
+
   }
   debugln();
 
@@ -39,6 +42,25 @@ void mqttCallback(char *topic, byte *message, unsigned int length)
       digitalWrite(EJECTION_PIN, LOW);
     }
   }
+
+  // If a message is received on the topic controls/standby, check if its in standby or not
+  // Used to switch the state machine on and off
+
+  if (String(topic) == "controls/standby")
+  {
+    debug(" Changing state from ");
+    if(messageTemp == "standby")
+    {
+      debugln("standby");
+      isInStandby = -1;
+    }
+    else if (messageTemp == "ready")
+    {
+      debugln("ready");
+      isInStandby = 0;
+    }
+
+  }
 }
 // if you plan on using the NodeMCU as the access point for wifi access
 void create_Accesspoint()
@@ -55,7 +77,7 @@ void create_Accesspoint()
   debugln("IP address: ");
   debugln(IP);
   client.setBufferSize(MQTT_BUFFER_SIZE);
-  client.setServer(mqtt_server, MQQT_PORT);
+  client.setServer(mqtt_server, MQTT_PORT);
   client.setCallback(mqttCallback);
 }
 
@@ -82,7 +104,7 @@ void setup_wifi()
   debugln(WiFi.localIP());
 
   client.setBufferSize(MQTT_BUFFER_SIZE);
-  client.setServer(mqtt_server, MQQT_PORT);
+  client.setServer(mqtt_server, MQTT_PORT);
   client.setCallback(mqttCallback);
 
   // Route for root / web page
@@ -101,18 +123,24 @@ void reconnect()
   while (!client.connected())
   {
     debugln("Attempting MQTT connection...");
+    debugln();
+
     // Attempt to connect
-    if (client.connect("ESP8266Client"))
+    if (client.connect("ESP32Client"))
     {
       debugln("connected to Mosquitto server");
       // Subscribe
       client.subscribe("controls/ejection");
+      client.subscribe("controls/standby");
     }
     else
     {
-      debug("failed, rc=");
+      debugln();
+      debug("Failed, rc = ");
       debug(client.state());
-      debugln(" try again in 50 milliseconds");
+      debugln();
+      debugln("Trying again in 50 milliseconds");
+      debugln();
       // Wait 5 seconds before retrying
       delay(50);
     }
@@ -121,8 +149,7 @@ void reconnect()
 
 void sendTelemetryWiFi(Data sv)
 {
-
-  // publish whole message i json
+  // publish whole message in json
   char mqttMessage[300];
   sprintf(mqttMessage, "{\"timestamp\":%lld,\"altitude\":%.3f,\"temperature\":%.3f,\"ax\":%.3f,\"ay\":%.3f,\"az\":%.3f,\"gx\":%.3f,\"gy\":%.3f,\"gz\":%.3f,\"filtered_s\":%.3f,\"filtered_v\":%.3f,\"filtered_a\":%.3f,\"state\":%d,\"longitude\":%.8f,\"latitude\":%.8f}", sv.timeStamp, sv.altitude, sv.temperature, sv.ax, sv.ay, sv.az, sv.gx, sv.gy, sv.gz, sv.filtered_s, sv.filtered_v, sv.filtered_a, sv.state, sv.longitude, sv.latitude);
   client.publish("esp32/message", mqttMessage);

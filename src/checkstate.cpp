@@ -8,6 +8,17 @@ float MAX_ALTITUDE = 0;
 // This checks that we have started ascent
 // compares the current displacement to the set threshold of the ground state displacement
 // if found to be above, we have achieved lift off
+int checkInStandby(int isInStandby)
+{
+    if (isInStandby == -1){
+        return STANDBY_STATE;
+    } else
+    {
+        return PRE_FLIGHT_GROUND_STATE;
+    }
+}
+
+
 int checkInPoweredFlight(float altitude)
 {
     float displacement = altitude - BASE_ALTITUDE;
@@ -65,11 +76,13 @@ int checkGround(float altitude)
 // We check if we have reached apogee to move to BALLISTIC_DESCENT_STATE
 // We deploy parachute to move to CHUTE_DESCENT_STATE
 // We check if we have reached the ground to move to POST_FLIGHT_GROUND_STATE
-int checkState(float currentAltitude, float temporalMaxAltitude, float velocity, float acceleration, int state)
+int checkState(float currentAltitude, float temporalMaxAltitude, float velocity, float acceleration, int isInStandby, int state)
 {
     switch (state)
     {
-    case PRE_FLIGHT_GROUND_STATE:
+    case STANDBY_STATE:
+        return checkInStandby(isInStandby);
+    case PRE_FLIGHT_GROUND_STATE: 
         return checkInPoweredFlight(currentAltitude);
     case POWERED_FLIGHT_STATE:
         return checkForApogee(velocity, currentAltitude, temporalMaxAltitude);

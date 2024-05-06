@@ -11,6 +11,6 @@ int deployChute(float altitude);
 
 int checkGround(float altitude);
 
-int checkState(float currentAltitude, float previousAltitude, float velocity, float acceleration, int state);
+int checkState(float currentAltitude, float previousAltitude, float velocity, float acceleration, int isInStandby, int state);
 
 #endif

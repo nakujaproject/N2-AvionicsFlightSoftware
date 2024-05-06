@@ -65,7 +65,7 @@ void init_bmp()
 void init_sensors()
 {
     init_gps();
-   init_bmp();
+    init_bmp();
     init_mpu();
 }
 
@@ -78,12 +78,12 @@ struct GPSReadings get_gps_readings()
     struct GPSReadings gpsReadings;
     
     while(Serial1.available() > 0 ){
- gps.encode(Serial1.read());
- if(gps.location.isUpdated()){
-    //latitude in degrees
-    gpsReadings.latitude = gps.location.lat();
-    gpsReadings.longitude = gps.location.lng();
- }
+        gps.encode(Serial1.read());
+        if(gps.location.isUpdated()){
+            //latitude in degrees
+            gpsReadings.latitude = gps.location.lat();
+            gpsReadings.longitude = gps.location.lng();
+        }
     }
     return gpsReadings;
 }

@@ -22,6 +22,9 @@ TaskHandle_t GPSTaskHandle;
 // if 1 chute has been deployed
 uint8_t isChuteDeployed = 0;
 
+// If -1 statemachine is in standby
+int8_t isInStandby;
+
 /* Onboard logging */
 File file;
 
@@ -75,8 +78,11 @@ struct Data readData()
 
   // using mutex to modify state
   portENTER_CRITICAL(&mutex);
-  state = checkState(filtered_values.displacement, temporalMaxAltitude, filtered_values.velocity, filtered_values.acceleration, state);
+  
+  state = checkState(filtered_values.displacement, temporalMaxAltitude, filtered_values.velocity, filtered_values.acceleration, isInStandby = -1, state);
+
   portEXIT_CRITICAL(&mutex);
+
   if (temporalMaxAltitude < filtered_values.displacement)
   {
     temporalMaxAltitude = filtered_values.displacement;

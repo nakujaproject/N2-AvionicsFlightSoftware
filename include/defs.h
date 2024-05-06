@@ -42,6 +42,8 @@
 #define POWERED_FLIGHT_STATE 1
 #define CHUTE_DESCENT_STATE 2
 #define POST_FLIGHT_GROUND_STATE 3
+#define STANDBY_STATE 4
+
 
 // define the thresholds of the various displacements that need to be achieved in the state machine
 #define GROUND_STATE_DISPLACEMENT 10
@@ -56,14 +58,17 @@ extern const BaseType_t app_cpu;
 
 // network credentials
 // network credentials
-#define ssid ".........."
-#define secret ".........."
+#define ssid "Galaxy"
+#define secret "luwa2131"
 
 // MQTT Broker IP address
-#define mqtt_server ".........."
+#define mqtt_server "192.168.1.122"
+
 // size of the data to be transmitted. can be increased or decreased based on the quantity of data you will transmit
 #define MQTT_BUFFER_SIZE 300
-#define MQQT_PORT 1883
+
+// MQTT Broker Port Number
+#define MQTT_PORT 1882
 
 extern WiFiClient espClient;
 extern PubSubClient client;
