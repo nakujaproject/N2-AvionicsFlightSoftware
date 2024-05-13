@@ -59,4 +59,7 @@ The flight program is structured as a state machine with the following states: a
 | 3  | Chute Descent| altitude <= 10m AGL|
 | 4  | Post-flight Ground    |  No more events  |
 
+#### State diagram
+![state-diagram](./docs/state.png)
+
 
